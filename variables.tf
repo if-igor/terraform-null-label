@@ -103,6 +103,16 @@ variable "label_order" {
   EOT
 }
 
+variable "attribute_order" {
+  type        = list(string)
+  default     = null
+  description = <<-EOT
+    The order in which attributes passed in as variables are merged with attributes passed in within the context.
+    Defaults to ["variable", "context"].
+    You can omit any of the 2 elements.
+  EOT
+}
+
 variable "regex_replace_chars" {
   type        = string
   default     = null

@@ -2,6 +2,7 @@ locals {
 
   defaults = {
     label_order         = ["namespace", "environment", "stage", "name", "attributes"]
+    attribute_order     = ["variable", "context"]
     regex_replace_chars = "/[^-a-zA-Z0-9]/"
     delimiter           = "-"
     replacement         = ""
@@ -27,7 +28,7 @@ locals {
     stage       = var.stage == null ? var.context.stage : var.stage
     name        = var.name == null ? var.context.name : var.name
     delimiter   = var.delimiter == null ? var.context.delimiter : var.delimiter
-    attributes  = compact(distinct(concat(var.attributes, var.context.attributes)))
+    attributes  = compact(distinct(flatten(local.ordered_attributes)))
     tags        = merge(var.context.tags, var.tags)
 
     additional_tag_map  = merge(var.context.additional_tag_map, var.additional_tag_map)
@@ -52,7 +53,12 @@ locals {
   additional_tag_map = merge(var.context.additional_tag_map, var.additional_tag_map)
 
   # Merge attributes
-  attributes = compact(distinct(concat(local.input.attributes, local.defaults.attributes)))
+  attribute_context = {
+    context = var.context.attributes
+    input   = var.attributes
+  }
+  ordered_attributes = [for l in local.attribute_order : local.attribute_context[l] if length(local.attribute_context[l]) > 0]
+  attributes         = compact(distinct(concat(local.input.attributes, local.defaults.attributes)))
 
   tags = merge(local.generated_tags, local.input.tags)
 
